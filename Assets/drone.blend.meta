@@ -3,6 +3,35 @@ guid: 36940f1ea7949421ca4fbaf8c8262f6a
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
+    100000: //RootNode
+    100002: Prop_-_lb
+    100004: Prop_-_lf
+    100006: Prop_-_rb
+    100008: Prop_-_rf
+    400000: //RootNode
+    400002: Prop_-_lb
+    400004: Prop_-_lf
+    400006: Prop_-_rb
+    400008: Prop_-_rf
+    2100000: Material
+    2100002: unnamed
+    2300000: //RootNode
+    2300002: Prop_-_lb
+    2300004: Prop_-_lf
+    2300006: Prop_-_rb
+    2300008: Prop_-_rf
+    3300000: //RootNode
+    3300002: Prop_-_lb
+    3300004: Prop_-_lf
+    3300006: Prop_-_rb
+    3300008: Prop_-_rf
+    4300000: Body
+    4300002: Prop_-_rf
+    4300004: Prop_-_rb
+    4300006: Prop_-_lf
+    4300008: Prop_-_lb
+    7400000: Default Take
+    9500000: //RootNode
     2186277476908879412: ImportLogs
   externalObjects: {}
   materials:
