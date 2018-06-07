@@ -4,12 +4,20 @@ using UnityEngine;
 
 public class DroneController : MonoBehaviour {
 	public Transform target;
-	
+
+	public float pAttGain = 0.01f;
+	public float dAttGain = 0.01f;
+
+	public float pPosGain = 0.001f;
+	public float dPosGain = 0.01f;
+
+	public float pHeightGain = 0.1f;
+	public float dHeightGain = 0.1f;
+
+	public NoisyStateEstimator stateEstimator;
+		
 	private List<Transform> props;
 	private Rigidbody rb;
-
-	public float Pgain = 0.001f;
-	public float Dgain = 0.001f;
 
 	void Start () {
 		props = new List<Transform>();
@@ -19,6 +27,7 @@ public class DroneController : MonoBehaviour {
 				props.Add(t);
 			}
 		}
+		stateEstimator = GetComponent<NoisyStateEstimator>();
 	}
 
 	void ApplyPropForce(int prop, float value) {
@@ -43,6 +52,7 @@ public class DroneController : MonoBehaviour {
 		ApplyHeightControl(forces);
 		ApplyAttitudePControl(forces);
 		ApplyAttitudeDControl(forces);
+		ApplyPositionPControl(forces);
 
 		for(int i = 0; i < 4; i++) {
 			ApplyPropForce(i, forces[i]);
@@ -52,23 +62,19 @@ public class DroneController : MonoBehaviour {
 	void ApplyAttitudePControl(float[] forces) {
 		float x = center(transform.eulerAngles.x);
 		float z = center(transform.eulerAngles.z);
-		forces[0] += Pgain * ( x + z);
-		forces[1] += Pgain * (-x - z);
-		forces[2] += Pgain * ( x - z);
-		forces[3] += Pgain * (-x + z);
+		forces[0] += pAttGain * ( x + z);
+		forces[1] += pAttGain * (-x - z);
+		forces[2] += pAttGain * ( x - z);
+		forces[3] += pAttGain * (-x + z);
 	}
 
 	void ApplyAttitudeDControl(float[] forces) {
 		float x = center(rb.angularVelocity.x);
 		float z = center(rb.angularVelocity.z);
-		forces[0] += Dgain * ( x + z);
-		forces[1] += Dgain * (-x - z);
-		forces[2] += Dgain * ( x - z);
-		forces[3] += Dgain * (-x + z);
-	}
-
-	Vector2 To2D(Vector3 v) {
-		return new Vector2(v.x, v.z);
+		forces[0] += dAttGain * ( x + z);
+		forces[1] += dAttGain * (-x - z);
+		forces[2] += dAttGain * ( x - z);
+		forces[3] += dAttGain * (-x + z);
 	}
 
 	void ApplyHeightControl(float[] forces) {
@@ -80,7 +86,23 @@ public class DroneController : MonoBehaviour {
 		Derror = Mathf.Clamp(Derror, -1f, 1f);
 
 		for(int i = 0; i < forces.Length; i++) {
-			forces[i] += basePower + (Perror * Pgain) + (Derror * Dgain);
+			forces[i] += basePower + (Perror * pHeightGain) + (Derror * dHeightGain);
+		}
+	}
+
+	Vector2 To2D(Vector3 v) {
+		return new Vector2(v.x, v.z);
+	}
+
+	void ApplyPositionPControl(float[] forces) {
+		Vector3 position = stateEstimator.getPosition();
+		for(int i = 0; i < 4; i++) {
+			Vector3 propDirection = props[i].position - position;
+			Vector3 targetDirection = target.position - position;
+			float pAction = -Vector3.Dot(targetDirection, propDirection) * targetDirection.magnitude * pPosGain;
+			pAction = Mathf.Clamp(pAction, -0.1f, 0.1f);
+			forces[i] += pAction;
+			forces[i] += Vector3.Dot(propDirection, rb.velocity) * dPosGain;
 		}
 	}
 }
